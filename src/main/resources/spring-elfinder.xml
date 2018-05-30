@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+
+
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:component-scan base-package="com.elfinder.controller" />
+
+	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter" />
+
+	<!-- find appropriate command executor for given command -->
+	<bean id="commandExecutorFactory"
+		class="com.elfinder.controller.executor.DefaultCommandExecutorFactory">
+		<property name="classNamePattern"
+			value="com.elfinder.controller.executors.%sCommandExecutor" />
+		<property name="fallbackCommand">
+			<bean
+				class="com.elfinder.controller.executors.MissingCommandExecutor" />
+		</property>
+		<property name="map">
+			<map>
+				<!--
+				<entry key="tree">
+					<bean clacom.upload.elfindernder.controller.executors.TreeCommandExecutor" />
+				</entry>
+				-->
+			</map>
+		</property>
+	</bean>
+
+	<!-- FsService is often retrieved from HttpRequest -->
+	<!-- while a static FsService is defined here -->
+	<bean id="fsServiceFactory" class="com.elfinder.impl.StaticFsServiceFactory">
+		<property name="fsService">
+			<bean class="com.elfinder.impl.DefaultFsService">
+				<property name="serviceConfig">
+					<bean class="com.elfinder.impl.DefaultFsServiceConfig">
+						<property name="tmbWidth" value="80" />
+					</bean>
+				</property>
+				<property name="volumeMap">
+					<!-- two volumes are mounted here -->
+					<map>
+						<!-- <entry key="A">
+							<bean clacom.upload.elfindernder.localfs.LocalFsVolume">
+								<property name="name" value="MyFiles" />
+								<property name="rootDir" value="/tmp/a" />
+							</bean>
+						</entry>
+						<entry key="B">
+							<bean clacom.upload.elfindernder.localfs.LocalFsVolume">
+								<property name="name" value="Shared" />
+								<property name="rootDir" value="/tmp/b" />
+							</bean>
+						</entry> -->
+					</map>
+				</property>
+				<!--
+				<property name="volumes">
+					<list>
+						<bean clacom.upload.elfindernder.localfs.LocalFsVolume">
+							<property name="name" value="MyFiles" />
+							<property name="rootDir" value="/tmp/a" />
+						</bean>
+						<bean clacom.upload.elfindernder.localfs.LocalFsVolume">
+							<property name="name" value="Shared" />
+							<property name="rootDir" value="/tmp/b" /> 
+						</bean>
+					</list>
+				</property>
+				-->
+				<property name="securityChecker">
+					<bean class="com.elfinder.impl.FsSecurityCheckerChain">
+						<property name="filterMappings">
+							<list>
+								<bean class="com.elfinder.impl.FsSecurityCheckFilterMapping">
+									<property name="pattern" value="File_.*" />
+									<property name="checker">
+										<bean class="com.elfinder.impl.FsSecurityCheckForAll">
+											<property name="readable" value="true" />
+											<property name="writable" value="true" />
+										</bean>
+									</property>
+								</bean>
+							</list>
+						</property>
+					</bean>
+				</property>
+			</bean>
+		</property>
+	</bean>
+</beans>
