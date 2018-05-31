@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>ssmUpload</groupId>
-	<artifactId>ssmUpload</artifactId>
+	<groupId>upload</groupId>
+	<artifactId>upload</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
-	<name>ssmUpload</name>
+	<name>upload</name>
 	<description />
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,16 +18,16 @@
 	<!-- 设定主仓库，按设定顺序进行查找。 -->
 	<repositories>
 		<repository>
-			<id>jeesite-repos</id>
-			<name>Jeesite Repository</name>
+			<id>upload-repos</id>
+			<name>upload Repository</name>
 			<url>http://maven.aliyun.com/nexus/content/groups/public</url>
 		</repository>
 	</repositories>
 	<!-- 设定插件仓库 -->
 	<pluginRepositories> 
 		<pluginRepository>
-			<id>jeesite-repos</id>
-			<name>Jeesite Repository</name>
+			<id>upload-repos</id>
+			<name>upload Repository</name>
 			<url>http://maven.aliyun.com/nexus/content/groups/public</url>
 		</pluginRepository>
 	</pluginRepositories> 
