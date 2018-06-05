@@ -1,16 +1,18 @@
 package com.upload.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.web.helper.SystemValue;
 import com.web.util.DateUtil;
+import com.web.util.ThreeDesUtil;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,12 +28,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Iterator;
 
 @Controller
 @RequestMapping(value = "")
 public class UploadController {
+
+    private Logger logger = Logger.getLogger(this.getClass());
 
     @RequestMapping(value = "upload")
     @ResponseBody
@@ -55,11 +60,27 @@ public class UploadController {
                     MultipartFile file = multiRequest.getFile((String) iter.next());
                     if (file != null) {
                         String oriName = file.getOriginalFilename();
-                        String fileName = System.currentTimeMillis() + "" + RandomUtils.nextInt(100, 999) + oriName.substring(oriName.lastIndexOf("."));
-                        File localFile = new File(savePath + fileName);
+                        String fileName = System.currentTimeMillis() + "" + RandomUtils.nextInt(100, 999);
+                        File localFile = new File(savePath + fileName + oriName.substring(oriName.lastIndexOf(".")));
                         // 写文件到本地
                         file.transferTo(localFile);
-                        if (file.getContentType().indexOf("image") >= 0) {
+                        //压缩
+                        String resizeParam = request.getParameter("defaultSize");
+                        if(StringUtils.isNotEmpty(resizeParam)){
+                            JSONArray array = JSONArray.parseArray(resizeParam);
+                            for(int i = 0; i< array.size(); i++){
+                                File newFile = new File(savePath + fileName + "!" + array.getIntValue(i) + oriName.substring(oriName.lastIndexOf(".")));
+                                Thumbnails.of(localFile).size(array.getIntValue(i), array.getIntValue(i)).toFile(newFile);
+                            }
+                        }
+                        //其他判断（单位和存储空间等信息）
+                        String limit = request.getParameter("limit");
+                        if(StringUtils.isNotEmpty(limit)){
+                            String param = ThreeDesUtil.decryptThreeDESECB(limit, ThreeDesUtil.key);
+                            System.out.println(param);
+                        }
+
+                        if (file.getContentType().contains("image")) {
                             //开始裁剪
                             handleImage(request, localFile, "");
                         }
@@ -72,7 +93,7 @@ public class UploadController {
                         } else {
                             baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
                         }
-                        String url = baseUrl + "/file/" + DateUtil.dateFormat(new Date(), "yyyyMM") + "/" + fileName;
+                        String url = baseUrl + "/file/" + DateUtil.dateFormat(new Date(), "yyyyMM") + "/" + fileName + oriName.substring(oriName.lastIndexOf("."));
                         result.put("url", url);
                         jsonObject.put("resultList", result);
                     }
@@ -114,7 +135,7 @@ public class UploadController {
     @RequestMapping(value = "qrcode")
     @ResponseBody
     public String qrcode(HttpServletRequest request, HttpServletResponse response, String img) {
-        byte[] image = Base64.decodeBase64(img.getBytes());
+        byte[] image = Base64.getDecoder().decode(img.getBytes());
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("resCode", 0);
@@ -193,7 +214,19 @@ public class UploadController {
         response.setCharacterEncoding("utf-8");
         InputStream is = null;
         try {
-            File file = new File(SystemValue.RESOURCE_PATH + File.separator + fileDir + File.separator + fileName);
+            String path = SystemValue.RESOURCE_PATH + File.separator + fileDir + File.separator;
+            String base64Width = fileName.indexOf("!") > 0 ? fileName.substring(fileName.indexOf("!") + 1,fileName.indexOf(".")) : "";
+            String oriFileName = fileName.contains("!") ? fileName.substring(0, fileName.indexOf("!")) + fileName.substring(fileName.indexOf(".")) : fileName;
+            Integer width = 0;
+            if(StringUtils.isNotEmpty(base64Width)){
+                Base64.Decoder decoder = Base64.getDecoder();
+                width = Integer.valueOf(new String(decoder.decode(base64Width.getBytes("UTF-8")), "UTF-8"));
+                fileName = fileName.replace(base64Width, width + "");
+            }
+            File file = new File(path + fileName);
+            if(!file.exists() && StringUtils.isNotEmpty(base64Width)){
+                Thumbnails.of(new File(path + oriFileName)).size(width, width).toFile(file);
+            }
             OutputStream out = response.getOutputStream();
             response.setContentLength((int) file.length());
             is = new FileInputStream(file);
@@ -201,7 +234,8 @@ public class UploadController {
             out.flush();
             out.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            logger.error(e.getMessage());
         } finally {
             if (is != null) {
                 try {
