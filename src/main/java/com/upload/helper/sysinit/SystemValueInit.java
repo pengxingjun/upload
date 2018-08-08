@@ -1,9 +1,9 @@
-package com.web.helper.sysinit;
+package com.upload.helper.sysinit;
 
+import com.upload.helper.SystemValue;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
-import com.web.helper.SystemValue;
 
 /**
  * 

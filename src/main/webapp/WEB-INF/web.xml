@@ -51,7 +51,7 @@
 
 	<filter>
 		<filter-name>CorsFilter</filter-name>
-		<filter-class>com.web.helper.CorsFilter</filter-class>
+		<filter-class>com.upload.helper.CorsFilter</filter-class>
 	</filter>
 	<filter-mapping>
 		<filter-name>CorsFilter</filter-name>
@@ -59,7 +59,7 @@
 	</filter-mapping>
 	
 	
-	<servlet>
+	<!--<servlet>
 	    <servlet-name>elfinder</servlet-name>
 	    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
 	    <init-param>
@@ -70,7 +70,7 @@
 	<servlet-mapping>
 	    <servlet-name>elfinder</servlet-name>
 	    <url-pattern>/elfinder/*</url-pattern>
-	</servlet-mapping>
+	</servlet-mapping>-->
 	
 	<welcome-file-list>
 		<welcome-file>index.jsp</welcome-file>

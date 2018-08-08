@@ -1,4 +1,4 @@
-package com.web.util;
+package com.upload.util;
 
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;

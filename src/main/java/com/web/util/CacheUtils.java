@@ -1,5 +1,6 @@
 package com.web.util;
 
+import com.upload.util.SpringContextHolder;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;

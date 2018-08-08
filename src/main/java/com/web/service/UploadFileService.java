@@ -1,8 +1,8 @@
 package com.web.service;
 
 import com.web.entities.UploadFile;
-import com.web.exception.ParamException;
-import com.web.helper.SystemValue;
+import com.upload.exception.ParamException;
+import com.upload.helper.SystemValue;
 import com.web.repository.UploadFileDao;
 import com.web.util.UploadFileCacheUtil;
 import org.apache.commons.lang3.StringUtils;

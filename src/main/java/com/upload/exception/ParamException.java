@@ -1,4 +1,4 @@
-package com.web.exception;
+package com.upload.exception;
 
 public class ParamException extends RuntimeException {
 

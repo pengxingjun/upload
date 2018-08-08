@@ -1,4 +1,4 @@
-package com.web.helper;
+package com.upload.helper;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

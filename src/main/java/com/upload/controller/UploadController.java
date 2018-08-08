@@ -2,9 +2,9 @@ package com.upload.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.web.helper.SystemValue;
-import com.web.util.DateUtil;
-import com.web.util.ThreeDesUtil;
+import com.upload.helper.SystemValue;
+import com.upload.util.DateUtil;
+import com.upload.util.ThreeDesUtil;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;

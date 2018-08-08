@@ -1,4 +1,4 @@
-package com.web.exception;
+package com.upload.exception;
 
 import java.util.HashMap;
 import java.util.Map;

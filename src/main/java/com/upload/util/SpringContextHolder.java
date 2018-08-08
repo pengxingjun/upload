@@ -1,4 +1,4 @@
-package com.web.util;
+package com.upload.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -1,12 +1,10 @@
 package com.web.util;
 
+import com.upload.util.SpringContextHolder;
 import com.web.entities.UploadFile;
-import com.web.helper.SystemValue;
 import com.web.service.UploadFileService;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Dean on 2017-8-4.

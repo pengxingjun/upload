@@ -16,9 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.web.exception.ParamException;
-import com.web.helper.SystemValue;
-import com.web.util.UploadFileCacheUtil;
+import com.upload.exception.ParamException;
+import com.upload.helper.SystemValue;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;

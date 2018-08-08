@@ -2,8 +2,6 @@ package com.elfinder.controller.executors;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,8 +13,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import com.elfinder.utils.MimeTypesUtils;
-import com.web.exception.ParamException;
-import com.web.helper.SystemValue;
+import com.upload.exception.ParamException;
+import com.upload.helper.SystemValue;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;

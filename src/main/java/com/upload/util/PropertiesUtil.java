@@ -1,4 +1,4 @@
-package com.web.util;
+package com.upload.util;
 /** 
  * <p>Description: Properties文件操作</p> 
  * 

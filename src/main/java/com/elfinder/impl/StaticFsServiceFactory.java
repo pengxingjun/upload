@@ -1,21 +1,16 @@
 package com.elfinder.impl;
 
 import java.io.File;
-import java.util.Date;
 
-import javax.annotation.Resource;
 import javax.servlet.ServletContext;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import com.elfinder.localfs.LocalFsVolume;
 import com.elfinder.localfs.MysqlFsVolume;
 import com.elfinder.services.FsService;
 import com.elfinder.services.FsServiceFactory;
-import com.web.helper.SystemValue;
+import com.upload.helper.SystemValue;
 import com.web.entities.UploadFile;
-import com.web.service.UploadFileService;
-import com.web.util.CookieUtil;
 import com.web.util.UploadFileCacheUtil;
 
 /**

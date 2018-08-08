@@ -1,17 +1,11 @@
 package com.elfinder.controller.executors;
 
-import com.elfinder.controller.ErrorException;
 import com.elfinder.controller.executor.AbstractJsonCommandExecutor;
 import com.elfinder.controller.executor.CommandExecutor;
 import com.elfinder.controller.executor.FsItemEx;
-import com.elfinder.localfs.MysqlFsItem;
-import com.elfinder.services.FsItem;
 import com.elfinder.services.FsService;
-import com.elfinder.services.FsVolume;
-import com.web.exception.ParamException;
-import com.web.helper.SystemValue;
-import com.web.helper.sysinit.SystemValueInit;
-import com.web.util.ImageUtils;
+import com.upload.exception.ParamException;
+import com.upload.helper.SystemValue;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -20,12 +14,9 @@ import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.swing.*;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.InputStream;
 
 /**

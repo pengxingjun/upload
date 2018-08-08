@@ -1,7 +1,7 @@
-package com.web.helper;
+package com.upload.helper;
 
 import com.web.entities.UploadFile;
-import com.web.util.PropertiesUtil;
+import com.upload.util.PropertiesUtil;
 
 public class SystemValue {
 	

@@ -11,7 +11,10 @@
                         http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
 	<!-- 自动扫描该包，使SpringMVC认为包下用了@controller注解的类是控制器 -->
 	<!--<context:component-scan base-packacom.upload.pluploadload.controller" />-->
-	<context:component-scan base-package="com.plupload,com.web,com.upload" use-default-filters="false"><!-- base-package 如果多个，用“,”分隔 -->
+	<!--<context:component-scan base-package="com.plupload,com.web,com.upload" use-default-filters="false">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+	</context:component-scan>-->
+	<context:component-scan base-package="com.upload" use-default-filters="false"><!-- base-package 如果多个，用“,”分隔 -->
 		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
 	</context:component-scan>
 
@@ -19,10 +22,10 @@
 	<mvc:annotation-driven />
 	
 	<!-- 当Spring容器启动完成后执行下面的这个Bean -->
-    <bean class="com.web.helper.sysinit.SystemValueInit"/>
+    <bean class="com.upload.helper.sysinit.SystemValueInit"/>
     
     <!-- 异常统一处理类 -->
-    <bean id="exceptionHandler" class="com.web.exception.ExceptionHandler"/>
+    <bean id="exceptionHandler" class="com.upload.exception.ExceptionHandler"/>
 	
 	<!--避免IE执行AJAX时，返回JSON出现下载文件 -->
 	<bean id="mappingJacksonHttpMessageConverter"
@@ -44,7 +47,7 @@
         <mvc:interceptor>  
         	<!-- 匹配的是url路径， 如果不配置或/**,将拦截所有的Controller -->
             <mvc:mapping path="/**" />
-            <bean class="com.web.helper.SystemInterceptor"></bean>
+            <bean class="com.upload.helper.SystemInterceptor"/>
         </mvc:interceptor>
         <!-- 当设置多个拦截器时，先按顺序调用preHandle方法，然后逆序调用每个拦截器的postHandle和afterCompletion方法 -->
     </mvc:interceptors>
