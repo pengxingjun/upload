@@ -1,3 +1,4 @@
+<!--
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -11,7 +12,7 @@
 
 	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter" />
 
-	<!-- find appropriate command executor for given command -->
+	&lt;!&ndash; find appropriate command executor for given command &ndash;&gt;
 	<bean id="commandExecutorFactory"
 		class="com.elfinder.controller.executor.DefaultCommandExecutorFactory">
 		<property name="classNamePattern"
@@ -22,17 +23,17 @@
 		</property>
 		<property name="map">
 			<map>
-				<!--
+				&lt;!&ndash;
 				<entry key="tree">
 					<bean clacom.upload.elfindernder.controller.executors.TreeCommandExecutor" />
 				</entry>
-				-->
+				&ndash;&gt;
 			</map>
 		</property>
 	</bean>
 
-	<!-- FsService is often retrieved from HttpRequest -->
-	<!-- while a static FsService is defined here -->
+	&lt;!&ndash; FsService is often retrieved from HttpRequest &ndash;&gt;
+	&lt;!&ndash; while a static FsService is defined here &ndash;&gt;
 	<bean id="fsServiceFactory" class="com.elfinder.impl.StaticFsServiceFactory">
 		<property name="fsService">
 			<bean class="com.elfinder.impl.DefaultFsService">
@@ -42,9 +43,9 @@
 					</bean>
 				</property>
 				<property name="volumeMap">
-					<!-- two volumes are mounted here -->
+					&lt;!&ndash; two volumes are mounted here &ndash;&gt;
 					<map>
-						<!-- <entry key="A">
+						&lt;!&ndash; <entry key="A">
 							<bean clacom.upload.elfindernder.localfs.LocalFsVolume">
 								<property name="name" value="MyFiles" />
 								<property name="rootDir" value="/tmp/a" />
@@ -55,10 +56,10 @@
 								<property name="name" value="Shared" />
 								<property name="rootDir" value="/tmp/b" />
 							</bean>
-						</entry> -->
+						</entry> &ndash;&gt;
 					</map>
 				</property>
-				<!--
+				&lt;!&ndash;
 				<property name="volumes">
 					<list>
 						<bean clacom.upload.elfindernder.localfs.LocalFsVolume">
@@ -71,7 +72,7 @@
 						</bean>
 					</list>
 				</property>
-				-->
+				&ndash;&gt;
 				<property name="securityChecker">
 					<bean class="com.elfinder.impl.FsSecurityCheckerChain">
 						<property name="filterMappings">
@@ -92,4 +93,4 @@
 			</bean>
 		</property>
 	</bean>
-</beans>
+</beans>-->

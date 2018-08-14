@@ -2,6 +2,7 @@ package com.upload.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.upload.exception.ParamException;
 import com.upload.helper.SystemValue;
 import com.upload.util.DateUtil;
 import com.upload.util.ThreeDesUtil;
@@ -28,9 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
-import java.util.Base64;
-import java.util.Date;
-import java.util.Iterator;
+import java.util.*;
 
 @Controller
 @RequestMapping(value = "")
@@ -43,10 +42,16 @@ public class UploadController {
     public String upload(HttpServletRequest request, HttpServletResponse response) {
         JSONObject jsonObject = new JSONObject();
         try {
-            String savePath = SystemValue.RESOURCE_PATH + File.separator + DateUtil.dateFormat(new Date(), "yyyyMM") + File.separator;
+            String unitFilePath = getRelatePath(request, "file");
+            String unitUrlPath = getRelatePath(request, "url");
+            String savePath = SystemValue.RESOURCE_PATH + File.separator + unitFilePath
+                    + DateUtil.dateFormat(new Date(), "yyyyMM") + File.separator;
             File dirPath = new File(savePath);
             if (!dirPath.exists()) {
-                dirPath.mkdirs();
+                boolean success = dirPath.mkdirs();
+                if(!success){
+                    throw new ParamException("上传文件夹错误");
+                }
             }
             // 解析器解析request的上下文
             CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver(request.getSession().getServletContext());
@@ -74,11 +79,6 @@ public class UploadController {
                             }
                         }
                         //其他判断（单位和存储空间等信息）
-                        String limit = request.getParameter("limit");
-                        if(StringUtils.isNotEmpty(limit)){
-                            String param = ThreeDesUtil.decryptThreeDESECB(limit, ThreeDesUtil.key);
-                            System.out.println(param);
-                        }
 
                         if (file.getContentType().contains("image")) {
                             //开始裁剪
@@ -87,13 +87,7 @@ public class UploadController {
                         jsonObject.put("resCode", 0);
                         JSONObject result = new JSONObject();
                         result.put("size", file.getSize());
-                        String baseUrl = "";
-                        if (request.getServerPort() == 80 || request.getServerPort() == 443) {
-                            baseUrl = request.getScheme() + "://" + request.getServerName() + request.getContextPath();
-                        } else {
-                            baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
-                        }
-                        String url = baseUrl + "/file/" + DateUtil.dateFormat(new Date(), "yyyyMM") + "/" + fileName + oriName.substring(oriName.lastIndexOf("."));
+                        String url = getBasePath(request) + "/file/" + unitUrlPath + DateUtil.dateFormat(new Date(), "yyyyMM") + "/" + fileName + oriName.substring(oriName.lastIndexOf("."));
                         result.put("url", url);
                         jsonObject.put("resultList", result);
                     }
@@ -116,13 +110,10 @@ public class UploadController {
             File newFile = handleImage(request, null, url);
             jsonObject.put("resCode", 0);
             JSONObject result = new JSONObject();
-            String baseUrl = "";
-            if (request.getServerPort() == 80 || request.getServerPort() == 443) {
-                baseUrl = request.getScheme() + "://" + request.getServerName() + request.getContextPath();
-            } else {
-                baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
-            }
-            result.put("url", baseUrl + "/file/" + DateUtil.dateFormat(new Date(), "yyyyMM") + "_thumb/" + newFile.getName());
+            String basePath = getBasePath(request);
+            String urlPath = url.substring(0, url.lastIndexOf("/")).replace(basePath, "")
+                    .replace("/file/", "");
+            result.put("url", basePath + "/file/" + urlPath + "/" + newFile.getName());
             jsonObject.put("resultList", result);
         } catch (Exception e) {
             e.printStackTrace();
@@ -140,16 +131,12 @@ public class UploadController {
         try {
             jsonObject.put("resCode", 0);
             JSONObject result = new JSONObject();
-            String baseUrl = "";
-            if (request.getServerPort() == 80 || request.getServerPort() == 443) {
-                baseUrl = request.getScheme() + "://" + request.getServerName() + request.getContextPath();
-            } else {
-                baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
-            }
-            String savePath = SystemValue.RESOURCE_PATH + File.separator + DateUtil.dateFormat(new Date(), "yyyyMM") + "_qrcode" + File.separator;
+            String savePath = SystemValue.RESOURCE_PATH + File.separator + getRelatePath(request, "file")
+                    + DateUtil.dateFormat(new Date(), "yyyyMM") + File.separator;
             String fileName = System.currentTimeMillis() + "" + RandomUtils.nextInt(100, 999) + ".jpg";
             byte2image(image, savePath + fileName);
-            result.put("url", baseUrl + "/file/" + DateUtil.dateFormat(new Date(), "yyyyMM") + "_qrcode/" + fileName);
+            result.put("url", getBasePath(request) + "/file/" + getRelatePath(request, "url")
+                    + DateUtil.dateFormat(new Date(), "yyyyMM") + fileName);
             jsonObject.put("resultList", result);
         } catch (Exception e) {
             e.printStackTrace();
@@ -163,35 +150,28 @@ public class UploadController {
     @ResponseBody
     public String svg2png(HttpServletRequest request, HttpServletResponse response, String svgCode) {
         JSONObject jsonObject = new JSONObject();
-        String savePath = SystemValue.RESOURCE_PATH + File.separator + DateUtil.dateFormat(new Date(), "yyyyMM") + File.separator;
-        String fileName = System.currentTimeMillis() + ".png";
         FileOutputStream outputStream = null;
         try {
+            String savePath = SystemValue.RESOURCE_PATH + File.separator + getRelatePath(request, "file")
+                    + DateUtil.dateFormat(new Date(), "yyyyMM") + File.separator;
+            String fileName = System.currentTimeMillis() + ".png";
             File dirPath = new File(savePath);
             if (!dirPath.exists()) {
                 dirPath.mkdirs();
             }
-
             File file = new File(savePath + fileName);
             file.createNewFile();
             outputStream = new FileOutputStream(file);
-
             byte[] bytes = svgCode.getBytes("utf-8");
             PNGTranscoder t = new PNGTranscoder();
             TranscoderInput input = new TranscoderInput(new ByteArrayInputStream(bytes));
             TranscoderOutput output = new TranscoderOutput(outputStream);
             t.transcode(input, output);
             outputStream.flush();
-
             jsonObject.put("resCode", 0);
             JSONObject result = new JSONObject();
-            String baseUrl = "";
-            if (request.getServerPort() == 80 || request.getServerPort() == 443) {
-                baseUrl = request.getScheme() + "://" + request.getServerName() + request.getContextPath();
-            } else {
-                baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
-            }
-            result.put("url", baseUrl + "/file/" + DateUtil.dateFormat(new Date(), "yyyyMM") + "/" + fileName);
+            result.put("url", getBasePath(request) + "/file/"  + getRelatePath(request, "url")
+                    + DateUtil.dateFormat(new Date(), "yyyyMM") + "/" + fileName);
             jsonObject.put("resultList", result);
         } catch (Exception e) {
             e.printStackTrace();
@@ -209,11 +189,53 @@ public class UploadController {
         return jsonObject.toJSONString();
     }
 
-    @RequestMapping(value = "/file/{fileDir}/{fileName:.+}")
-    public void file(@PathVariable(value = "fileDir") String fileDir, @PathVariable(value = "fileName") String fileName, HttpServletResponse response) {
+    /*@RequestMapping(value = "/file/{fileDir}/{fileName:.+}")
+    public void file(@PathVariable(value = "fileDir") String fileDir, @PathVariable(value = "fileName") String fileName,
+                     HttpServletResponse response) {
         response.setCharacterEncoding("utf-8");
         InputStream is = null;
         try {
+            String path = SystemValue.RESOURCE_PATH + File.separator + "base" + File.separator + fileDir + File.separator;
+            String base64Width = fileName.indexOf("!") > 0 ? fileName.substring(fileName.indexOf("!") + 1,fileName.indexOf(".")) : "";
+            String oriFileName = fileName.contains("!") ? fileName.substring(0, fileName.indexOf("!")) + fileName.substring(fileName.indexOf(".")) : fileName;
+            Integer width = 0;
+            if(StringUtils.isNotEmpty(base64Width)){
+                Base64.Decoder decoder = Base64.getDecoder();
+                width = Integer.valueOf(new String(decoder.decode(base64Width.getBytes("UTF-8")), "UTF-8"));
+                fileName = fileName.replace(base64Width, width + "");
+            }
+            File file = new File(path + fileName);
+            if(!file.exists() && StringUtils.isNotEmpty(base64Width)){
+                Thumbnails.of(new File(path + oriFileName)).size(width, width).toFile(file);
+            }
+            OutputStream out = response.getOutputStream();
+            response.setContentLength((int) file.length());
+            is = new FileInputStream(file);
+            IOUtils.copy(is, out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            //e.printStackTrace();
+            logger.error(e.getMessage());
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }*/
+
+    @RequestMapping(value = "/file/**")
+    public void file(HttpServletRequest request, HttpServletResponse response) {
+        response.setCharacterEncoding("utf-8");
+        InputStream is = null;
+        try {
+            String url = request.getRequestURI().replace(request.getContextPath(), "").replace("/file/", "").replaceAll("/+", "/");
+            String fileDir = url.substring(0, url.lastIndexOf("/"));
+            String fileName = url.substring(url.lastIndexOf("/") + 1);
             String path = SystemValue.RESOURCE_PATH + File.separator + fileDir + File.separator;
             String base64Width = fileName.indexOf("!") > 0 ? fileName.substring(fileName.indexOf("!") + 1,fileName.indexOf(".")) : "";
             String oriFileName = fileName.contains("!") ? fileName.substring(0, fileName.indexOf("!")) + fileName.substring(fileName.indexOf(".")) : fileName;
@@ -275,8 +297,10 @@ public class UploadController {
                 return file;
             } else if (file == null && !StringUtils.isEmpty(url)) {
                 String[] name = url.substring(url.lastIndexOf("/") + 1).split("\\.");
-                String filePath = SystemValue.RESOURCE_PATH + File.separator + DateUtil.dateFormat(new Date(), "yyyyMM")
-                        + "_thumb" + File.separator + name[0] + "_" + dataX + "_" + dataWidth + "_" + dataY + "_" + dataHeight + "." + name[1];
+                String urlPath = url.substring(0, url.lastIndexOf("/")).replace(getBasePath(request),"")
+                        .replace("/file/", "").replace("/", File.separator);
+                String filePath = SystemValue.RESOURCE_PATH + File.separator + urlPath + File.separator
+                        + name[0] + "_" + dataX + "_" + dataWidth + "_" + dataY + "_" + dataHeight + "." + name[1];
                 File newFile = new File(filePath);
                 if (!newFile.getParentFile().exists()) {
                     newFile.getParentFile().mkdirs();
@@ -313,6 +337,54 @@ public class UploadController {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    private String getRelatePath(HttpServletRequest request, String type) throws Exception{
+        String path = "";
+        String limit = request.getParameter("limit");
+        if(StringUtils.isNotEmpty(limit)){
+            String param = ThreeDesUtil.decryptThreeDESECB(limit, ThreeDesUtil.key);
+            Map<String, String> paramMap = getQueryString(param);
+            if(StringUtils.isNotEmpty(paramMap.get("project"))){
+                if("file".equals(type)){
+                    path += paramMap.get("project") + File.separator ;
+                }else {
+                    path += paramMap.get("project") + "/" ;
+                }
+            }
+            if(StringUtils.isNotEmpty(paramMap.get("unit_id"))){
+                if("file".equals(type)){
+                    path += paramMap.get("unit_id") + File.separator ;
+                }else {
+                    path += paramMap.get("unit_id") + "/" ;
+                }
+            }
+        }
+        return path;
+    }
+
+    private String getBasePath(HttpServletRequest request){
+        String baseUrl = "";
+        if (request.getServerPort() == 80 || request.getServerPort() == 443) {
+            baseUrl = request.getScheme() + "://" + request.getServerName() + request.getContextPath();
+        } else {
+            baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+        }
+        return baseUrl;
+    }
+
+    private Map<String, String> getQueryString(String url){
+        Map<String, String> map = null;
+        url = url.substring(url.indexOf("?") + 1);
+        if (url.contains("=")) {
+            map = new HashMap<>();
+            String[] arrTemp = url.split("&");
+            for (String str : arrTemp) {
+                String[] qs = str.split("=");
+                map.put(qs[0], qs.length == 2 ? qs[1] : "");
+            }
+        }
+        return map;
     }
 
 }
