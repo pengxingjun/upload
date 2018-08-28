@@ -6,6 +6,7 @@ import com.upload.exception.ParamException;
 import com.upload.helper.SystemValue;
 import com.upload.util.DateUtil;
 import com.upload.util.ThreeDesUtil;
+import com.upload.util.VideoUtil;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
@@ -29,6 +30,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 @Controller
@@ -70,25 +74,37 @@ public class UploadController {
                         // 写文件到本地
                         file.transferTo(localFile);
                         //压缩
-                        String resizeParam = request.getParameter("defaultSize");
-                        if(StringUtils.isNotEmpty(resizeParam)){
-                            JSONArray array = JSONArray.parseArray(resizeParam);
-                            for(int i = 0; i< array.size(); i++){
-                                File newFile = new File(savePath + fileName + "!" + array.getIntValue(i) + oriName.substring(oriName.lastIndexOf(".")));
-                                Thumbnails.of(localFile).size(array.getIntValue(i), array.getIntValue(i)).toFile(newFile);
-                            }
-                        }
-                        //其他判断（单位和存储空间等信息）
-
                         if (file.getContentType().contains("image")) {
+                            String resizeParam = request.getParameter("defaultSize");
+                            if(StringUtils.isNotEmpty(resizeParam)){
+                                JSONArray array = JSONArray.parseArray(resizeParam);
+                                for(int i = 0; i< array.size(); i++){
+                                    File newFile = new File(savePath + fileName + "!" + array.getIntValue(i) + oriName.substring(oriName.lastIndexOf(".")));
+                                    Thumbnails.of(localFile).size(array.getIntValue(i), array.getIntValue(i)).toFile(newFile);
+                                }
+                            }
                             //开始裁剪
                             handleImage(request, localFile, "");
                         }
+                        String thumbUrl = "";
+                        int videoTime = 0;
+                        if (file.getContentType().contains("video")) {
+                            if(VideoUtil.processImg(localFile.getAbsolutePath())){
+                                thumbUrl = fileName + ".jpg";
+                                videoTime = VideoUtil.getVideoTime(localFile.getAbsolutePath());
+                            }
+                        }
                         jsonObject.put("resCode", 0);
                         JSONObject result = new JSONObject();
+                        String rePath = getBasePath(request) + "/file/" + unitUrlPath + DateUtil.dateFormat(new Date(), "yyyyMM") + "/";
                         result.put("size", file.getSize());
-                        String url = getBasePath(request) + "/file/" + unitUrlPath + DateUtil.dateFormat(new Date(), "yyyyMM") + "/" + fileName + oriName.substring(oriName.lastIndexOf("."));
-                        result.put("url", url);
+                        result.put("url", rePath + fileName + oriName.substring(oriName.lastIndexOf(".")));
+                        if(StringUtils.isNotEmpty(thumbUrl)){
+                            result.put("thumb", rePath + thumbUrl);
+                        }
+                        if(videoTime > 0){
+                            result.put("time", videoTime);
+                        }
                         jsonObject.put("resultList", result);
                     }
                 }
@@ -96,7 +112,7 @@ public class UploadController {
         } catch (Exception e) {
             e.printStackTrace();
             jsonObject.put("resCode", 1);
-            jsonObject.put("message", "图片上传失败");
+            jsonObject.put("message", "文件上传失败");
         }
         return jsonObject.toJSONString();
     }
@@ -246,6 +262,12 @@ public class UploadController {
                 fileName = fileName.replace(base64Width, width + "");
             }
             File file = new File(path + fileName);
+            Path tmpPath = Paths.get(path + fileName);
+            String contentType =  Files.probeContentType(tmpPath);
+            if(contentType == null || "".equals(contentType)) {
+                contentType = "application/octet-stream";
+            }
+            response.setContentType(contentType);
             if(!file.exists() && StringUtils.isNotEmpty(base64Width)){
                 Thumbnails.of(new File(path + oriFileName)).size(width, width).toFile(file);
             }
